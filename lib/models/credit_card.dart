@@ -1,10 +1,8 @@
-import 'dart:convert';
-
-import 'package:equatable/equatable.dart';
+import 'package:cc_assessment/models/base_class.dart';
 
 enum CardType { visa, mastercard, amex }
 
-class CreditCard extends Equatable {
+class CreditCard extends BaseClass {
   final int cardNumber;
   final CardType ccType;
   final int cvv;

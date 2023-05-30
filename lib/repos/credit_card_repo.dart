@@ -1,28 +1,26 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:cc_assessment/models/credit_card.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:cc_assessment/repos/base_repo.dart';
 
-class CreditCardRepo {
+class CreditCardRepo extends BaseRepo<CreditCard> {
   static final CreditCardRepo _instance = CreditCardRepo._internal();
 
   factory CreditCardRepo() {
     return _instance;
   }
 
-  CreditCardRepo._internal() {
-    _loadCreditCards();
-  }
+  CreditCardRepo._internal() : super('cards');
+
+  Future<void> init() async => await loadClasses();
 
   late List<CreditCard> _cards;
 
   List<CreditCard> get cards => _cards;
 
-  Future<bool> addCard(CreditCard card) async {
-    if (!_cards.contains(card)) {
-      _cards.add(card);
-      return await _writeCardJson(
+  @override
+  Future<bool> addClass(CreditCard addClass) async {
+    if (!_cards.contains(addClass)) {
+      _cards.add(addClass);
+      return await super.writeJson(
         _cards.map((CreditCard card) => card.toJson()).toList(),
         isInitial: _cards.length == 1,
       );
@@ -31,41 +29,16 @@ class CreditCardRepo {
     }
   }
 
-  Future<String> get _localPath async {
-    final directory = await getApplicationDocumentsDirectory();
-    return directory.path;
+  @override
+  Future<void> deleteClass(CreditCard removeClass) async {
+    _cards.removeWhere((card) => card == removeClass);
+    await super.writeJson(_cards.map((CreditCard card) => card.toJson()).toList(), isInitial: true);
   }
 
-  Future<File> get _loadFile async {
-    final path = await _localPath;
-    return File('$path/cards.txt');
-  }
-
-  Future<bool> _writeCardJson(dynamic cardJson, {required bool isInitial}) async {
-    final file = await _loadFile;
-    try {
-      await file.writeAsString(
-        jsonEncode(cardJson),
-        mode: isInitial ? FileMode.write : FileMode.append,
-      );
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  Future<List<dynamic>> _readData() async {
-    try {
-      final file = await _loadFile;
-      final contents = await file.readAsString();
-      return jsonDecode(contents) as List<dynamic>;
-    } catch (e) {
-      return [];
-    }
-  }
-
-  Future<void> _loadCreditCards() async {
-    List<dynamic> data = await _readData();
+  @override
+  Future<void> loadClasses() async {
+    List<dynamic> data = await super.readData();
     _cards = data.map((json) => CreditCard.fromJson(json)).toList();
+    print('cards loaded');
   }
 }
