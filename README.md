@@ -29,3 +29,5 @@ A system that allows admins to submit credit card numbers for validation.
     - Added added credit card cards on card screen.
     - Added added assets to make cards look like an actual credit card.
     - Added go router navigation back from add card screen.
+    - Fixed bugs with country repo.
+    - Fixed bugs with CardType enum in fromJson.
