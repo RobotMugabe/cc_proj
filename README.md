@@ -22,3 +22,10 @@ A system that allows admins to submit credit card numbers for validation.
     - Added go router functionality.
     - Added theme using json_theme.
     - Added initial card screen.
+
+## 3 June 2023 - v0.0.8+1
+    - Added add card screen.
+    - Added validation for new cards.
+    - Added added credit card cards on card screen.
+    - Added added assets to make cards look like an actual credit card.
+    - Added go router navigation back from add card screen.

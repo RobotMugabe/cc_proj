@@ -6,29 +6,28 @@ import 'package:equatable/equatable.dart';
 part 'card_screen_state.dart';
 
 class CardScreenCubit extends Cubit<CardScreenState> {
-  late CreditCardRepo cardRepo;
-  CardScreenCubit() : super(CardScreenState.initial()) {
-    cardRepo = CreditCardRepo();
-  }
+
+  CardScreenCubit() : super(CardScreenState.initial());
 
   Future<void> loadCards() async {
-    await cardRepo.init();
     emit(
-      CardScreenState.loaded(cardRepo.cards),
+      CardScreenState.loaded(CreditCardRepo().cards),
     );
   }
 
   Future<void> addCard(CreditCard card) async {
-    await cardRepo.addClass(card);
-    emit(
-      CardScreenState.loaded(state.creditCards..add(card)),
-    );
+    final bool isSaved = await CreditCardRepo().addClass(card);
+    if (isSaved) {
+      emit(
+        CardScreenState.loaded(state.creditCards..add(card)),
+      );
+    }
   }
 
   Future<void> deleteCard(CreditCard card) async {
-    await cardRepo.deleteClass(card);
+    await CreditCardRepo().deleteClass(card);
     emit(
-      CardScreenState.loaded(cardRepo.cards),
+      CardScreenState.loaded(CreditCardRepo().cards),
     );
   }
 }

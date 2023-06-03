@@ -1,6 +1,8 @@
 import 'dart:convert';
 
-import 'package:cc_assessment/screens/add_card_screen/add_card_screen_cubit/add_card_screen_cubit.dart';
+import 'package:cc_assessment/repos/country_repo.dart';
+import 'package:cc_assessment/repos/credit_card_repo.dart';
+import 'package:cc_assessment/screens/add_card_screen/add_card_screen.dart';
 import 'package:cc_assessment/screens/card_screen/card_screen.dart';
 import 'package:cc_assessment/screens/card_screen/card_screen_cubit/card_screen_cubit.dart';
 import 'package:flutter/material.dart';
@@ -15,44 +17,53 @@ void main() async {
   final themeStr = await rootBundle.loadString('assets/cc_proj_theme.json');
   final themeJson = jsonDecode(themeStr);
   final ThemeData? theme = ThemeDecoder.decodeThemeData(themeJson, validate: false);
-  runApp(CreditCardApp(theme));
+  final CreditCardRepo cardRepo = CreditCardRepo();
+  final CountryRepo countryRepo = CountryRepo();
+  await cardRepo.init();
+  await countryRepo.init();
+  runApp(CreditCardApp(theme, cardRepo, countryRepo));
 }
 
-final GoRouter _router = GoRouter(
-  routes: <RouteBase>[
-    GoRoute(
-      path: '/',
-      builder: (BuildContext context, GoRouterState state) {
-        return CardScreen();
-      },
+final GoRouter router = GoRouter(
       routes: <RouteBase>[
         GoRoute(
-          path: 'add_card',
+          path: '/',
           builder: (BuildContext context, GoRouterState state) {
-            return BlocProvider(
-              create: (context) => AddCardScreenCubit(),
-              child: Container(),
-            ); //const AddCardScreen();
+            BlocProvider.of<CardScreenCubit>(context).loadCards();
+            return CardScreen();
           },
+          routes: <RouteBase>[
+            GoRoute(
+              path: 'add_card',
+              builder: (BuildContext context, GoRouterState state) {
+                return AddCardScreen(router: router);
+              },
+            ),
+          ],
         ),
       ],
-    ),
-  ],
-);
+    );
 
 class CreditCardApp extends StatelessWidget {
   final ThemeData? theme;
+  final CreditCardRepo cardRepo;
+  final CountryRepo countryRepo;
 
-  const CreditCardApp(this.theme, {super.key});
+  const CreditCardApp(
+    this.theme,
+    this.cardRepo,
+    this.countryRepo, {
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => CardScreenCubit()..loadCards(),
+      create: (context) => CardScreenCubit(),
       child: MaterialApp.router(
         //debugShowCheckedModeBanner: false,
         theme: theme,
-        routerConfig: _router,
+        routerConfig: router,
       ),
     );
   }

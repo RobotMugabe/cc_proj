@@ -2,21 +2,29 @@ import 'package:cc_assessment/models/base_class.dart';
 
 class Country extends BaseClass {
   final String name;
-  final String? code;
-  const Country(this.name, {this.code});
+  final String alpha2;
+  final String alpha3;
+  const Country(
+    this.name, {
+    required this.alpha2,
+    required this.alpha3,
+  });
 
   Country.fromJson(Map<String, dynamic> json)
       : name = json['name'],
-        code = json['code'];
+        alpha2 = json['alpha2'],
+        alpha3 = json['alpha3'];
 
   Map<String, dynamic> toJson() => {
         'cardname_number': name,
-        'code': code,
+        'alpha2': alpha2,
+        'alpha3': alpha3,
       };
 
   @override
   List<Object?> get props => [
         name,
-        code,
+        alpha2,
+        alpha3,
       ];
 }
