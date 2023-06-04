@@ -16,7 +16,7 @@ class Country extends BaseClass {
         alpha3 = json['alpha3'];
 
   Map<String, dynamic> toJson() => {
-        'cardname_number': name,
+        'name': name,
         'alpha2': alpha2,
         'alpha3': alpha3,
       };

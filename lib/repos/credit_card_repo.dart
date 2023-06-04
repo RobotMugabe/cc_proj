@@ -22,7 +22,6 @@ class CreditCardRepo extends BaseRepo<CreditCard> {
       _cards.add(addClass);
       return await super.writeJson(
         _cards.map((CreditCard card) => card.toJson()).toList(),
-        isInitial: _cards.length == 1,
       );
     } else {
       return false;
@@ -32,7 +31,7 @@ class CreditCardRepo extends BaseRepo<CreditCard> {
   @override
   Future<void> deleteClass(CreditCard removeClass) async {
     _cards.removeWhere((card) => card == removeClass);
-    await super.writeJson(_cards.map((CreditCard card) => card.toJson()).toList(), isInitial: true);
+    await super.writeJson(_cards.map((CreditCard card) => card.toJson()).toList());
   }
 
   @override
@@ -42,3 +41,5 @@ class CreditCardRepo extends BaseRepo<CreditCard> {
     print('cards loaded');
   }
 }
+
+

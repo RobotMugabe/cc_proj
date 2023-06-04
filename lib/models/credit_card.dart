@@ -13,6 +13,35 @@ CardType getCardType(String cardType) {
   return CardType.unknown;
 }
 
+bool masterCardMatcher(String cardNumber) {
+  if (cardNumber.startsWith('51')) {
+    return true;
+  } else if (cardNumber.startsWith('52')) {
+    return true;
+  } else if (cardNumber.startsWith('53')) {
+    return true;
+  } else if (cardNumber.startsWith('54')) {
+    return true;
+  } else if (cardNumber.startsWith('55')) {
+    return true;
+  } else if ((int.parse(cardNumber.substring(0, 6)) >= 222100) &&
+      (int.parse(cardNumber.substring(0, 6)) <= 272099)) {
+    return true;
+  }
+  return false;
+}
+
+CardType getCardTypeFromCardNumber(String cardNumber) {
+  if (cardNumber.startsWith('4')) {
+    return CardType.visa;
+  } else if (masterCardMatcher(cardNumber)) {
+    return CardType.mastercard;
+  } else if (cardNumber.startsWith('34') || cardNumber.startsWith('37')) {
+    return CardType.amex;
+  }
+  return CardType.unknown;
+}
+
 class CreditCard extends BaseClass {
   final int cardNumber;
   final CardType ccType;
@@ -33,12 +62,12 @@ class CreditCard extends BaseClass {
   //break card number up into chunks of 4
   String get friendlyCardNumber {
     String returnString = '';
-    for (int i = 0; i <= cardNumber.toString().length; i+=4) {
-      if (cardNumber.toString().length < i+4) {
+    for (int i = 0; i <= cardNumber.toString().length; i += 4) {
+      if (cardNumber.toString().length < i + 4) {
         returnString += cardNumber.toString().substring(i);
         break;
       }
-      returnString += '${cardNumber.toString().substring(i,i+4)} ';
+      returnString += '${cardNumber.toString().substring(i, i + 4)} ';
     }
     return returnString;
   }

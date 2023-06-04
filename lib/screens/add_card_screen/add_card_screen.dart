@@ -1,3 +1,4 @@
+import 'package:cc_assessment/extensions.dart';
 import 'package:cc_assessment/models/country.dart';
 import 'package:cc_assessment/models/credit_card.dart';
 import 'package:cc_assessment/repos/country_repo.dart';
@@ -6,15 +7,32 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:searchfield/searchfield.dart';
 
+int doubleAndSumDigits(int digit) {
+  //Double digit, if this is greater than 9 then subtract 9
+  return ((digit * 2) > 9) ? ((digit * 2) - 9) : (digit * 2);
+}
+
+bool luhnAlgorithm(String value) {
+  int sum = 0;
+  for (int i = value.length - 1; i >= 0; i--) {
+    int digit = int.parse(value.substring(i, i + 1));
+    if ((value.length - i) % 2 == 0) {
+      digit = doubleAndSumDigits(digit);
+    }
+    sum += digit;
+  }
+  return sum % 10 == 0;
+}
+
 class AddCardScreen extends StatefulWidget {
-  final String? cardNumber;
-  final CardType? cardType;
   final GoRouter router;
+  final Map<String, dynamic>? scanData;
+  final void Function(String message) messageFunction;
   const AddCardScreen({
     super.key,
-    this.cardNumber,
-    this.cardType,
     required this.router,
+    this.scanData,
+    required this.messageFunction,
   });
 
   @override
@@ -24,6 +42,7 @@ class AddCardScreen extends StatefulWidget {
 class _AddCardScreenState extends State<AddCardScreen> {
   final _key = GlobalKey<FormState>();
   late final FocusNode _countryNode;
+  late final FocusNode _cvvNode;
   late final TextEditingController _cardNumberController;
   late final TextEditingController _cvvController;
   late final TextEditingController _nameController;
@@ -35,8 +54,11 @@ class _AddCardScreenState extends State<AddCardScreen> {
   void initState() {
     super.initState();
     _countryNode = FocusNode();
-    _cardType = widget.cardType;
-    _cardNumberController = TextEditingController(text: widget.cardNumber);
+    _cvvNode = FocusNode();
+    _cardType =
+        widget.scanData != null ? getCardTypeFromCardNumber(widget.scanData!['card_number']) : null;
+    _cardNumberController = TextEditingController(
+        text: widget.scanData != null ? widget.scanData!['card_number'] : null);
     _cvvController = TextEditingController();
     _nameController = TextEditingController();
   }
@@ -86,6 +108,10 @@ class _AddCardScreenState extends State<AddCardScreen> {
     _countryNode.unfocus();
     if (_key.currentState!.validate()) {
       await _saveCard();
+    } else {
+      setState(() {
+        _isSaving = false;
+      });
     }
   }
 
@@ -100,6 +126,11 @@ class _AddCardScreenState extends State<AddCardScreen> {
     final success = await CreditCardRepo().addClass(card);
     if (success) {
       widget.router.pop();
+    } else {
+      setState(() {
+        _isSaving = false;
+      });
+      widget.messageFunction('Card already saved');
     }
   }
 
@@ -125,30 +156,13 @@ class _AddCardScreenState extends State<AddCardScreen> {
         ),
       );
 
-  int doubleAndSumDigits(int digit) {
-    //Double digit, if this is greater than 9 then subtract 9
-    return ((digit * 2) > 9) ? ((digit * 2) - 9) : (digit * 2);
-  }
-
-  bool luhnAlgorithm(String value) {
-    int sum = 0;
-    for (int i = value.length - 1; i >= 0; i--) {
-      int digit = int.parse(value.substring(i, i + 1));
-      if ((value.length - i) % 2 == 0) {
-        digit = doubleAndSumDigits(digit);
-      }
-      sum += digit;
-    }
-    return sum % 10 == 0;
-  }
-
   String? cardNumberValidator(String? value) {
     if (value == null) {
       return 'Fill in card number';
     } else if (int.tryParse(value) == null) {
       return 'Not an integer';
-    } else if (value.length < 7) {
-      return 'Number should be 7 digits or more';
+    } else if (value.length <= 12) {
+      return 'Number should be 12 digits or more';
     } else if (luhnAlgorithm(value) == true) {
       return null;
     }
@@ -170,13 +184,14 @@ class _AddCardScreenState extends State<AddCardScreen> {
     if (value == null) {
       return 'Select card type';
     }
+
     return null;
   }
 
   String? _countryValidator(String? value) {
     if (value == null) {
       return 'Select country of origin';
-    } else if (CountryRepo().bannedCountries.contains(CountryRepo().fromName(value))) {
+    } else if (CountryRepo().bannedCountries.contains(_country)) {
       return 'Banned country';
     } else if (CountryRepo().fromName(value) == null) {
       return 'Please select a country from the list';
@@ -197,9 +212,14 @@ class _AddCardScreenState extends State<AddCardScreen> {
       controller: _cardNumberController,
       validator: (value) => cardNumberValidator(value),
       decoration: _decoration('Card Number', context),
-      onFieldSubmitted: (_) => _key.currentState!.validate(),
+      onFieldSubmitted: (value) {
+        _key.currentState!.validate();
+        _cardType = getCardTypeFromCardNumber(value);
+        _cvvNode.nextFocus();
+        setState(() {});
+      },
       textInputAction: TextInputAction.next,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
+      autovalidateMode: AutovalidateMode.always,
     );
   }
 
@@ -209,9 +229,9 @@ class _AddCardScreenState extends State<AddCardScreen> {
       decoration: _decoration('Card Type', context),
       isExpanded: true,
       validator: _cardTypeValidator,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
+      autovalidateMode: AutovalidateMode.always,
       items: CardType.values
-          .where((cardType) => cardType != CardType.unknown)
+          //.where((cardType) => cardType != CardType.unknown)
           .map(
             (CardType country) => DropdownMenuItem<CardType>(
               value: country,
@@ -228,6 +248,7 @@ class _AddCardScreenState extends State<AddCardScreen> {
       keyboardType: TextInputType.number,
       controller: _cvvController,
       validator: (value) => cvvValidator(value),
+      focusNode: _cvvNode,
       decoration: _decoration('CVV Number', context),
       textInputAction: TextInputAction.next,
       autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -268,11 +289,5 @@ class _AddCardScreenState extends State<AddCardScreen> {
         _countryNode.unfocus();
       },
     );
-  }
-}
-
-extension StringExtension on String {
-  String titleCase() {
-    return "${this[0].toUpperCase()}${substring(1).toLowerCase()}";
   }
 }

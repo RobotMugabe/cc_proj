@@ -5,7 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 class CardScreen extends StatelessWidget {
-  const CardScreen({super.key});
+  const CardScreen({super.key, required this.router});
+  final GoRouter router;
 
   @override
   Widget build(BuildContext context) {
@@ -33,18 +34,29 @@ class CardScreen extends StatelessWidget {
                     );
                   },
                 ),
-                const SizedBox(
-                  height: 5,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    const SizedBox(width: 5),
+                    ElevatedButton.icon(
+                      icon: const Icon(Icons.credit_card),
+                      label: const Text('Add Card'),
+                      onPressed: () {
+                        router.go('/card_reader');
+                      },
+                    ),
+                    const SizedBox(width: 5),
+                    ElevatedButton.icon(
+                      icon: const Icon(Icons.disabled_by_default),
+                      label: const Text('Edit Banned Countries'),
+                      onPressed: () {
+                        router.go('/banned_country');
+                      },
+                    ),
+                    const SizedBox(width: 5),
+                  ],
                 ),
-                ElevatedButton(
-                  onPressed: () {
-                    GoRouter.of(context).go('/add_card');
-                  },
-                  child: const Text('Add Credit Card'),
-                ),
-                const SizedBox(
-                  height: 20,
-                )
+                const SizedBox(height: 5)
               ],
             ),
           ),
@@ -54,7 +66,7 @@ class CardScreen extends StatelessWidget {
   }
 
   Widget creditCard(CreditCard card, BuildContext context) {
-    return Container(
+    return SizedBox(
       height: 0.63 * MediaQuery.of(context).size.width,
       child: Card(
         elevation: 40,
@@ -82,9 +94,10 @@ class CardScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              Expanded(
+              //TODO add expiry date
+              /* Expanded(
                 child: Container(child: Text('09/99')),
-              ),
+              ), */
               Expanded(
                 child: Container(
                   padding: const EdgeInsets.only(left: 10),

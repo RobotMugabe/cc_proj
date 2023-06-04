@@ -19,12 +19,12 @@ abstract class BaseRepo<T extends BaseClass> {
     return File('$path/$fileName.txt');
   }
 
-  Future<bool> writeJson(dynamic json, {required bool isInitial}) async {
+  Future<bool> writeJson(dynamic json) async {
     final file = await loadFile;
     try {
       await file.writeAsString(
         jsonEncode(json),
-        mode: isInitial ? FileMode.write : FileMode.append,
+        mode: FileMode.write
       );
       return true;
     } catch (e) {

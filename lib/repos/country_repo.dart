@@ -1,6 +1,6 @@
 import 'dart:convert';
-import 'package:collection/collection.dart';
 
+import 'package:collection/collection.dart';
 import 'package:cc_assessment/models/country.dart';
 import 'package:cc_assessment/repos/base_repo.dart';
 import 'package:flutter/services.dart';
@@ -32,7 +32,6 @@ class CountryRepo extends BaseRepo<Country>{
       _bannedCountries.add(addClass);
       return await super.writeJson(
         _bannedCountries.map((Country country) => country.toJson()).toList(),
-        isInitial: _bannedCountries.length == 1,
       );
     } else {
       return false;
@@ -42,7 +41,7 @@ class CountryRepo extends BaseRepo<Country>{
   @override
   Future<void> deleteClass(Country removeClass) async {
     _bannedCountries.removeWhere((country) => country == removeClass);
-    await super.writeJson(_bannedCountries.map((Country country) => country.toJson()).toList(), isInitial: true);
+    await super.writeJson(_bannedCountries.map((Country country) => country.toJson()).toList());
   }
 
   @override

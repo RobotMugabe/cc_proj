@@ -31,3 +31,13 @@ A system that allows admins to submit credit card numbers for validation.
     - Added go router navigation back from add card screen.
     - Fixed bugs with country repo.
     - Fixed bugs with CardType enum in fromJson.
+
+## 4 June 2023 - v0.1.0+1
+    - Added ban countries screen.
+    - Added scan card screen.
+    - Fixed validation when data comes from card scan.
+    - Fixed bug to do with failed saving new card.
+    - Fixed CardType inference (removed regex and did it with if else).
+    - Fixed validation error with banned countries.
+    - Added unit tests for luhn algorithm and card type inference.
+    - Fixed Card Type not being inferred when adding card number manually.
